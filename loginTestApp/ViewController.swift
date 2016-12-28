@@ -70,23 +70,41 @@ class ViewController: UIViewController, UITextFieldDelegate {
 
     func loginButtonTapped(){
         print("login tapped")
+        
+        guard let email = self.usernameField.text, let password = self.passwordField.text
+            else{ return }
+        
+
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            // Get user value
+            let value = snapshot.value as? NSDictionary
+            let username = value?["username"] as? String
+            let password1 = value?["password"] as? String
+            let user = User.init(username: username!, password: password1!)
+            
+            
+            if(email == user.username && password == user.password){
+                print("valid login")
+            }else{
+                print("invalid login")
+            }
+            
+        }) { (error) in
+            print(error.localizedDescription)
+        }
+        
+        
     }
 
     func newAccountButtonTapped(){
-        print("make new account tapped")
-        
-        
         guard let email = self.usernameField.text, let password = self.passwordField.text
-            else{
-                    return
-                }
+            else{ return }
 
         let userItemRef = self.ref
         let userItem = User(username: email, password: password)
-        
-        print("user item: ",userItem.toAnyObject())
-        
-        userItemRef?.setValue(userItem.toAnyObject())
+        let k: Int = Int(arc4random())
+
+        userItemRef?.child(String(k)).setValue(userItem.toAnyObject())
 
     }
 }
