@@ -8,4 +8,5 @@ target 'loginTestApp' do
   # Pods for loginTestApp
   pod 'Firebase/Core'
   pod 'Firebase/Database'
+  pod 'Firebase/Auth'
 end

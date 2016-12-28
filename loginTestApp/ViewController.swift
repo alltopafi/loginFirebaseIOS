@@ -16,10 +16,16 @@ class ViewController: UIViewController, UITextFieldDelegate {
     var ref: FIRDatabaseReference!
     //let ref = FIRDatabase.database().reference(withPath: "users")
 
-
+    override func viewDidAppear(_ animated: Bool) {
+        self.navigationController?.isNavigationBarHidden = true
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         view.backgroundColor = .white
+        self.navigationController?.isNavigationBarHidden = true
+        self.title = "Logout"
         ref = FIRDatabase.database().reference(withPath: "users")
 //        createTextField(title: "Username")
         usernameField = createTextField(title: "Username", xCord: 20, yCord: 250, widthSize: 300, heightSize: 40, color: UIColor.white)
@@ -41,9 +47,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-    }
+    
     
     func createTextField(title: String, xCord: Int , yCord: Int , widthSize: Int, heightSize: Int, color: UIColor) -> UITextField {
         let tempField = UITextField(frame: CGRect(x: xCord, y: yCord, width: widthSize, height: heightSize))
@@ -72,40 +76,48 @@ class ViewController: UIViewController, UITextFieldDelegate {
         print("login tapped")
         
         guard let email = self.usernameField.text, let password = self.passwordField.text
-            else{ return }
-        
-
-        ref.observeSingleEvent(of: .value, with: { (snapshot) in
-            // Get user value
-            let value = snapshot.value as? NSDictionary
-            let username = value?["username"] as? String
-            let password1 = value?["password"] as? String
-            let user = User.init(username: username!, password: password1!)
-            
-            
-            if(email == user.username && password == user.password){
-                print("valid login")
-            }else{
-                print("invalid login")
+            else{
+                print("Form is not valid")
+                return
             }
-            
-        }) { (error) in
-            print(error.localizedDescription)
+        if email == "" || password == "" {
+            print("Form cannot be empty")
+            return
         }
         
+        FIRAuth.auth()?.signIn(withEmail: email, password: password) { (user, error) in
         
+        if error != nil {
+            print(error)
+            return
+        }else{
+            let logView = LoggedInViewController()
+            self.navigationController?.pushViewController(logView, animated: true)
+        }
+    }
     }
 
     func newAccountButtonTapped(){
         guard let email = self.usernameField.text, let password = self.passwordField.text
-            else{ return }
-
-        let userItemRef = self.ref
-        let userItem = User(username: email, password: password)
-        let k: Int = Int(arc4random())
-
-        userItemRef?.child(String(k)).setValue(userItem.toAnyObject())
-
+            else{
+                print("Form is not valid")
+                return
+            }
+        
+        if email == "" || password == "" {
+            print("Form cannot be empty")
+            return
+            }
+        FIRAuth.auth()?.createUser(withEmail: email, password: password) { (user, error) in
+            if error != nil {
+                print(error)
+                return
+            }else{
+                let logView = LoggedInViewController()
+                self.navigationController?.pushViewController(logView, animated: true)
+            }
+        }
     }
 }
+
 
